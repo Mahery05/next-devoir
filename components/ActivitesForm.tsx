@@ -12,6 +12,7 @@ export default function ActivitesForm() {
     e.preventDefault(); // Empêcher la soumission du formulaire par défaut
 
     // Récupérer la valeur du champ 'nom'
+    const form = e.currentTarget;
     const nom = e.currentTarget.nom.value.trim();
     const datetime_debut = e.currentTarget.datetime_debut.value.trim();
     const duree = e.currentTarget.duree.value.trim();
@@ -21,7 +22,7 @@ export default function ActivitesForm() {
 
     // Vérifier si le champ est vide
     if (nom === "" || datetime_debut === "" || duree === "" || description === "" || places_disponibles === "" || type_id === "") {
-      setError(<p>Le champ nom est requis</p>);
+      setError(<p>Tous les champs ne sont pas remplis</p>);
       return;
     }
 
@@ -34,6 +35,11 @@ export default function ActivitesForm() {
         },
         body: JSON.stringify({
           nom,
+            datetime_debut,
+            duree,
+            description,
+            places_disponibles,
+            type_id
         }),
       });
 
@@ -45,7 +51,9 @@ export default function ActivitesForm() {
       }
 
       // Réinitialiser le formulaire et afficher un message de succès
-      e.currentTarget.reset();
+      if (form) {
+        form.reset();
+      }
       setError(null);
       setSuccess(<p>activité créé avec succès !</p>);
       router.refresh(); // Actualiser la page si nécessaire
