@@ -12,7 +12,7 @@ export async function encrypt(payload: any) {
   return await new SignJWT(payload)
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
-    .setExpirationTime(Date.now() + 60 * 1000) // JWT expiration (1 minute)
+    .setExpirationTime(Date.now() + 60 * 60 * 1000) // JWT expiration (1 minute)
     .sign(key);
 }
  
@@ -28,6 +28,23 @@ export async function decrypt(input: string): Promise<any> {
     return NextResponse.json({ message: "Session expired" }, { status: 403 })
   }
 }
+
+export async function checkAuth() {
+    const session = await getSession();
+   
+    if (!session) { // If no session set
+      return NextResponse.json(
+        { message: "User is not authenticated" },
+        { status: 403 }
+      );
+    }
+   
+    if (session.exp < Date.now()) { // If JWT expired
+      return NextResponse.json({ message: "Session expired" }, { status: 403 });
+    }
+   
+    return NextResponse.json({ message: "Logged" }, { status: 200 });
+  }
  
 // Create the cookie
 export async function createCookie(sessionData: object) {
