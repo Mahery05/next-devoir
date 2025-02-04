@@ -3,7 +3,7 @@
 import { useState, FormEvent, JSX } from "react";
 import { useRouter } from "next/navigation";
 
-export default function ActiviteForm() {
+export default function ActivitesForm() {
   const [error, setError] = useState<JSX.Element | null>(null);
   const [success, setSuccess] = useState<JSX.Element | null>(null);
   const router = useRouter();
