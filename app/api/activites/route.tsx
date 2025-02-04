@@ -48,12 +48,6 @@ async function createActivites(nom: string, datetime_debut: string, duree: strin
     return false; // Si le nom existe déjà
   }
 
-  // Vérifier que les champs ne sont pas vides ou invalides
-  if (!nom || !datetime_debut || !duree || !description || !places_disponibles || !type_id) {
-    console.error("Un ou plusieurs champs sont vides ou invalides.");
-    return false;
-  }
-
   // Insérer un nouveau type d'activité dans la table type_activite
   const { data, error } = await supabase
     .from("activites")
