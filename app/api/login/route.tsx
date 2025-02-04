@@ -4,6 +4,8 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { checkPassword } from "@/utils/bcryptjs";
 
+import { createCookie } from "@/utils/sessions";
+
 // Initialisation du client Supabase avec les variables d'environnement
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -27,6 +29,9 @@ export async function POST(req: Request) {
       { status: 403 }
     );
   }
+
+  const sessionData = { rowid: response, email: email }; // Data to add in the JWT payload such as user id, role, etc
+  await createCookie(sessionData);
 
   return NextResponse.json({ response });
 }

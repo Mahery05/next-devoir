@@ -37,7 +37,7 @@ export default function LoginForm() {
           setError(<p>{message}</p>);
         } else {
           if (pathname.startsWith("/login")) {
-            router.push("/mon-compte"); // Redirect to /mon-compte page
+            router.push("/mes-reservations"); 
           }
           router.refresh(); // Keep this page
         }
