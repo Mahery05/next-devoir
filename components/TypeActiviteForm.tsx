@@ -12,7 +12,8 @@ export default function TypeActiviteForm() {
     e.preventDefault(); // Empêcher la soumission du formulaire par défaut
 
     // Récupérer la valeur du champ 'nom'
-    const nom = e.currentTarget.nom.value.trim();
+    const form = e.currentTarget;
+    const nom = form.nom.value.trim();
 
     // Vérifier si le champ est vide
     if (nom === "") {
@@ -40,7 +41,9 @@ export default function TypeActiviteForm() {
       }
 
       // Réinitialiser le formulaire et afficher un message de succès
-      e.currentTarget.reset();
+      if (form) {
+        form.reset(); // Vérification si le formulaire existe
+      }
       setError(null);
       setSuccess(<p>Type d&apos;activité créé avec succès !</p>);
       router.refresh(); // Actualiser la page si nécessaire
