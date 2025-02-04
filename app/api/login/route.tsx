@@ -40,7 +40,7 @@ async function login(email: string, motdepasse: string) {
   // Vérifier si l'utilisateur existe avec cet email
   const { data: user, error } = await supabase
     .from("users")
-    .select("email, motdepasse, rowid") // Select the necessary fields
+    .select("email, motdepasse, id") // Select the necessary fields
     .eq("email", email)
     .single();
 
@@ -55,5 +55,5 @@ async function login(email: string, motdepasse: string) {
     return false; // Mot de passe incorrect
   }
 
-  return user.rowid; // Retourner l'ID de l'utilisateur (ou toute autre donnée pertinente)
+  return user.id; // Retourner l'ID de l'utilisateur (ou toute autre donnée pertinente)
 }

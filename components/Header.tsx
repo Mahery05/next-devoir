@@ -20,15 +20,15 @@ export default function Header() {
       <Link
         href="/mes-reservations"
         className={clsx("", {
-          active: pathname === "/mon-compte",
+          active: pathname === "/mes-reservations",
         })}
       >
-        Mon compte
+        Mes réservations
       </Link>
       <Link
-        href="/mon-compte/profil"
+        href="/mes-reservations/profil"
         className={clsx("", {
-          active: pathname === "/mon-compte/profil",
+          active: pathname === "/mes-reservations/profil",
         })}
       >
         Mon profil
