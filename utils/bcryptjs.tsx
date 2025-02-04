@@ -5,3 +5,9 @@ export function hashPassword(motdepasse: string) {
     return hashedPassword;
   });
 }
+
+export function checkPassword(motdepasse: string, hashedPassword: string) {
+  return bcrypt.compare(motdepasse, hashedPassword).then((isCorrect: boolean) => {
+    return isCorrect;
+  });
+}
