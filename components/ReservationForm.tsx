@@ -1,68 +1,93 @@
 "use client";
 
-import { useState, FormEvent, JSX } from "react";
+import { useState, useEffect, FormEvent, JSX } from "react";
 import { useRouter } from "next/navigation";
+import { User } from "@/types/User";
+import { Activite } from "@/types/Activite";
 
-export default function ActivitesForm() {
+
+
+export default function ReservationForm() {
   const [error, setError] = useState<JSX.Element | null>(null);
   const [success, setSuccess] = useState<JSX.Element | null>(null);
+  const [users, setUsers] = useState<User[]>([]);
+  const [activites, setActivites] = useState<Activite[]>([]);
   const router = useRouter();
+
+  // Récupérer la liste des utilisateurs et des activités depuis l'API
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [usersResponse, activitesResponse] = await Promise.all([
+          fetch("/api/user"), // Remplacez par votre endpoint API réel pour récupérer les utilisateurs
+          fetch("/api/activites"), // Remplacez par votre endpoint API réel pour récupérer les activités
+        ]);
+
+        const usersData = await usersResponse.json();
+        const activitesData = await activitesResponse.json();
+
+        setUsers(usersData);
+        setActivites(activitesData);
+      } catch (error) {
+        console.error("Erreur lors du chargement des utilisateurs ou des activités:", error);
+        setError(<p>Erreur lors du chargement des données</p>);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault(); // Empêcher la soumission du formulaire par défaut
 
-    // Récupérer la valeur du champ 'nom'
     const form = e.currentTarget;
     const datereservation = e.currentTarget.datereservation.value.trim();
-    const etat = e.currentTarget.etat.value.trim();
-    const activite_id = e.currentTarget.activite_id.value.trim();
-    const user_id = e.currentTarget.user_id.value.trim();
+    const etat = e.currentTarget.etat.checked ? "1" : "0"; // Convertir la checkbox en booléen
+    const activite_id = e.currentTarget.activite_id.value;
+    const user_id = e.currentTarget.user_id.value;
 
-    // Vérifier si le champ est vide
-    if (datereservation === "" || etat === "" || activite_id === "" || user_id === "") {
+    // Vérifier si tous les champs sont remplis
+    if (datereservation === "" || activite_id === "" || user_id === "") {
       setError(<p>Tous les champs ne sont pas remplis</p>);
       return;
     }
 
     try {
-      // Envoyer une requête POST vers l'API de création de type_activite
       const response = await fetch("/api/reservations", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-            datereservation,
-            etat,
-            activite_id,
-            user_id
+          datereservation,
+          etat,
+          activite_id: Number(activite_id),
+          user_id: Number(user_id),
         }),
       });
 
-      // Vérifier si la requête a échoué
       if (!response.ok) {
         const { message } = await response.json();
         setError(<p>{message}</p>);
         return;
       }
 
-      // Réinitialiser le formulaire et afficher un message de succès
       if (form) {
         form.reset();
       }
       setError(null);
-      setSuccess(<p>reservation créé avec succès !</p>);
+      setSuccess(<p>Réservation créée avec succès !</p>);
       router.refresh(); // Actualiser la page si nécessaire
     } catch (error) {
       console.error(error);
-      setError(<p>Une erreur s&apos;est produite lors de la création activité</p>);
+      setError(<p>Une erreur s&apos;est produite lors de la création de la réservation</p>);
     }
   };
 
   return (
     <>
       <form method="POST" onSubmit={handleSubmit}>
-        <label htmlFor="datereservation">Date de reservation</label>
+        <label htmlFor="datereservation">Date de réservation</label>
         <input
           type="datetime-local"
           name="datereservation"
@@ -70,34 +95,43 @@ export default function ActivitesForm() {
           placeholder="Ex: 2022-01-01T00:00"
         />
         <br />
-        <label htmlFor="datetime_debut">Etat : </label>
+        <label htmlFor="etat">État : </label>
         <input
           type="checkbox"
           name="etat"
           id="etat"
-          placeholder="Ex: 1"
         />
         <br />
-        <label htmlFor="duree">Activite </label>
-        <input
-          type="number"
-          name="activite_id"
-          id="activite_id"
-          placeholder="Ex: 1"
-        />
+
+        {/* Sélection des activités */}
+        <label htmlFor="activite_id">Activité</label>
+        <select name="activite_id" id="activite_id">
+          <option value="">Sélectionner une activité</option>
+          {activites.map((activite) => (
+            <option key={activite.id} value={activite.id}>
+              {activite.nom}
+            </option>
+          ))}
+        </select>
         <br />
-        <label htmlFor="description">User </label>
-        <input
-          type="number"
-          name="user_id"
-          id="user_id"
-          placeholder="Ex: 1"
-        />
+
+        {/* Sélection des utilisateurs */}
+        <label htmlFor="user_id">Utilisateur</label>
+        <select name="user_id" id="user_id">
+          <option value="">Sélectionner un utilisateur</option>
+          {users.map((user) => (
+            <option key={user.id} value={user.id}>
+              {user.nom}
+            </option>
+          ))}
+        </select>
         <br />
-        <input type="submit" name="creer" value="Créer une reservation" />
+
+        <input type="submit" name="creer" value="Créer une réservation" />
       </form>
       {error && error}
       {success && success}
     </>
   );
 }
+
