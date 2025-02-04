@@ -1,12 +1,33 @@
 "use client";
 
-import { useState, FormEvent, JSX } from "react";
+import { useState, useEffect, FormEvent, JSX } from "react";
 import { useRouter } from "next/navigation";
+import { TypeActivite } from "@/types/TypeActivite";
 
 export default function ActivitesForm() {
   const [error, setError] = useState<JSX.Element | null>(null);
   const [success, setSuccess] = useState<JSX.Element | null>(null);
   const router = useRouter();
+  const [type_activites, setTypeActivites] = useState<TypeActivite[]>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [type_activitesResponse] = await Promise.all([
+          fetch("/api/type_activite"), // Remplacez par votre endpoint API réel pour récupérer les utilisateurs
+        ]);
+
+        const type_activitesData = await type_activitesResponse.json();
+        
+        setTypeActivites(type_activitesData);
+      } catch (error) {
+        console.error("Erreur lors du chargement des utilisateurs ou des activités:", error);
+        setError(<p>Erreur lors du chargement des données</p>);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault(); // Empêcher la soumission du formulaire par défaut
@@ -106,13 +127,17 @@ export default function ActivitesForm() {
           placeholder="Ex: 10"
         />
         <br />
-        <label htmlFor="type_id">Type d&apos;activité : </label>
-        <input
-          type="number"
-          name="type_id"
-          id="type_id"
-          placeholder="Ex: 1"
-        />
+        {/* Sélection des activités */}
+        <label htmlFor="type_id">Activité</label>
+        <select name="type_id" id="type_id">
+          <option value="">Sélectionner une activité</option>
+          {type_activites.map((type_activite) => (
+            <option key={type_activite.id} value={type_activite.id}>
+              {type_activite.nom}
+            </option>
+          ))}
+        </select>
+        <br />
         <input type="submit" name="creer" value="Créer type d'activité" />
       </form>
       {error && error}
