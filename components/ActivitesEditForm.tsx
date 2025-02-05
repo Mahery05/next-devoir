@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Activite } from "@/types/Activite";
 import { TypeActivite } from "@/types/TypeActivite";
-import Image from "next/image";
 
 const ActiviteEditForm = () => {
   const { id } = useParams();

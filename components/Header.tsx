@@ -18,7 +18,6 @@ export default function Header() {
   if (pathname === "/login" || pathname === "/register") {
     return null;
   }
- 
   return (
     <nav>
         <Link
