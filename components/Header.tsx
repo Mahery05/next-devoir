@@ -21,6 +21,14 @@ export default function Header() {
  
   return (
     <nav>
+        <Link
+        href="/mon-profil"
+        className={clsx("", {
+          active: pathname === "/mon-profil",
+        })}
+      >
+        Mon Profil
+      </Link>
       <Link
         href="/mes-reservations"
         className={clsx("", {

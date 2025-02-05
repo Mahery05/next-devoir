@@ -30,17 +30,20 @@ export async function POST(req: Request) {
     );
   }
 
-  const sessionData = { rowid: response, email: email }; // Data to add in the JWT payload such as user id, role, etc
+  // Inclure prénom et nom dans les données de session à stocker
+  const { id, email: userEmail, prenom, nom } = response;
+
+  const sessionData = { rowid: id, email: userEmail, prenom, nom }; // Inclure prénom et nom dans le JWT payload
   await createCookie(sessionData);
 
   return NextResponse.json({ response });
 }
 
 async function login(email: string, motdepasse: string) {
-  // Vérifier si l'utilisateur existe avec cet email
+  // Récupérer l'utilisateur avec email, mot de passe, prénom, et nom
   const { data: user, error } = await supabase
     .from("users")
-    .select("email, motdepasse, id") // Select the necessary fields
+    .select("email, motdepasse, id, prenom, nom") // Sélectionner les champs nécessaires
     .eq("email", email)
     .single();
 
@@ -55,5 +58,11 @@ async function login(email: string, motdepasse: string) {
     return false; // Mot de passe incorrect
   }
 
-  return user.id; // Retourner l'ID de l'utilisateur (ou toute autre donnée pertinente)
+  // Retourner toutes les informations nécessaires pour la session
+  return {
+    id: user.id,
+    email: user.email,
+    prenom: user.prenom,
+    nom: user.nom
+  };
 }
