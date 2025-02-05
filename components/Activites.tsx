@@ -1,16 +1,16 @@
 "use client"
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation'; // Utilisez 'next/navigation' au lieu de 'next/router'
 import { supabase } from '../lib/supabaseClient';
 import { Activite } from '@/types/Activite';
 import { TypeActivite } from '@/types/TypeActivite';
-
-
 
 const Activites = () => {
   const [activites, setActivites] = useState<Activite[]>([]);
   const [typeActivites, setTypeActivites] = useState<TypeActivite[]>([]);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -45,15 +45,24 @@ const Activites = () => {
     return type ? type.nom : 'Type inconnu';
   };
 
+  const handleEdit = (id: number) => {
+    router.push(`/activites/edit/${id}`);
+  };
+
   return (
     <>
       {activites.length > 0 ? (
         <>
           {activites.map((activite: Activite, i: number) => {
             return (
-              <p key={i}>
-                {activite.nom} : {new Date(activite.datetime_debut).toLocaleString()} : {activite.description} : {activite.duree} minutes : {activite.places_disponibles} places disponibles : {getTypeNom(activite.type_id)}
-              </p>
+              <div key={i} style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
+                <p>
+                  {activite.nom} : {new Date(activite.datetime_debut).toLocaleString()} : {activite.description} : {activite.duree} minutes : {activite.places_disponibles} places disponibles : {getTypeNom(activite.type_id)}
+                </p>
+                <button onClick={() => handleEdit(activite.id)} style={{ marginLeft: '10px', background: 'none', border: 'none', cursor: 'pointer' }}>
+                  <img src="/images/edit.png" alt="Edit" width={20} height={20} />
+                </button>
+              </div>
             );
           })}
         </>
