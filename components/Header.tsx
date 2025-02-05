@@ -26,12 +26,12 @@ export default function Header() {
         Mes réservations
       </Link>
       <Link
-        href="/mes-reservations/profil"
+        href="/mes-reservations/create"
         className={clsx("", {
-          active: pathname === "/mes-reservations/profil",
+          active: pathname === "/mes-reservations/create",
         })}
       >
-        Mon profil
+        Créer une réservation
       </Link>
       <button onClick={Logout}>Logout</button>
     </nav>

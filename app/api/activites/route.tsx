@@ -90,7 +90,7 @@ export async function GET() {
     const plainData = JSON.parse(JSON.stringify(data));
   
   
-    console.log("reservations", data);
+    console.log("activites", data);
   
     return NextResponse.json(plainData);
 }
