@@ -1,30 +1,35 @@
 "use client";
 
-import { useParams } from 'next/navigation'; // Utiliser useParams de next/navigation
+import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Activite } from '@/types/Activite';
 
 const DetailsActivite = () => {
-  const { id } = useParams(); 
+  const { id } = useParams();
   const [activite, setActivite] = useState<Activite | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null); 
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    console.log("ID récupéré:", id); 
+    console.log("ID récupéré:", id);
+
+   
     if (id) {
       const fetchActivite = async () => {
         try {
-          const response = await fetch(`/api/activites/${id}`);
-          console.log("Réponse de l'API:", response); 
+          
+          const response = await fetch(`/api/activite/${id}`);
+
           
           if (!response.ok) {
             throw new Error(`Erreur lors de la récupération des données (Statut: ${response.status})`);
           }
 
+          
           const data = await response.json();
-          console.log("Données de l'activité:", data); 
+          console.log("Données de l'activité:", data);
 
+          
           if (data && data.nom) {
             setActivite(data);
           } else {
@@ -32,9 +37,10 @@ const DetailsActivite = () => {
           }
 
           setLoading(false);
-        } catch (error: any) {
-          console.error('Erreur lors de la récupération de l\'activité:', error.message);
-          setError(error.message);  
+        } catch (error) {
+            const errorMessage = error as { message: string };
+          console.error('Erreur lors de la récupération de l\'activité:', errorMessage);
+          setError(errorMessage.message);
           setLoading(false);
         }
       };
@@ -44,20 +50,23 @@ const DetailsActivite = () => {
       setError('ID manquant');
       setLoading(false);
     }
-  }, [id]); 
+  }, [id]);
 
   if (loading) {
     return <p>Chargement...</p>;
   }
 
+  
   if (error) {
-    return <p>{error}</p>;  
+    return <p>{error}</p>;
   }
 
+ 
   if (!activite) {
     return <p>Aucune activité trouvée</p>;
   }
 
+  
   return (
     <div>
       <h1>Détails de l&apos;activité</h1>

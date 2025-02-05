@@ -6,6 +6,7 @@ import { supabase } from '../lib/supabaseClient';
 import { Activite } from '@/types/Activite';
 import { TypeActivite } from '@/types/TypeActivite';
 import Link from 'next/link';
+import Image from 'next/image';
 
 const Activites = () => {
   const [activites, setActivites] = useState<Activite[]>([]);
@@ -65,7 +66,7 @@ const Activites = () => {
                 : {getTypeNom(activite.type_id)}
               </p>
               <button onClick={() => handleEdit(activite.id)} style={{ marginLeft: '10px', background: 'none', border: 'none', cursor: 'pointer' }}>
-                <img src="/images/edit.png" alt="Edit" width={20} height={20} />
+                <Image src="/images/edit.png" alt="Edit" width={20} height={20} />
               </button>
             </div>
           );
