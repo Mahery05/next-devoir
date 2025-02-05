@@ -1,5 +1,10 @@
 import ActivitesForm from "@/components/ActivitesForm";
 
 export default function ActivitePage() {
-  return <ActivitesForm />;
+  return (
+       <>
+         <h2>Créer une activitée</h2>
+         <ActivitesForm/>
+       </>
+     );
 }

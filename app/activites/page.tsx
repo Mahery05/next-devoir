@@ -1,7 +1,11 @@
 import Activites from "@/components/Activites";
 
 export default function ActivitesPage() {
-   return   <Activites />
-    
+ return (
+     <>
+       <h2>Activitées</h2>
+       <Activites/>
+     </>
+   );
   
 }

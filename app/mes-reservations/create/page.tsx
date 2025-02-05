@@ -1,5 +1,10 @@
 import ReservationForm from "@/components/ReservationForm";
 
 export default function ActivitePage() {
-  return <ReservationForm />;
+  return (
+      <>
+        <h2>Ajoutez une réservation</h2>
+        <ReservationForm/>
+      </>
+    );
 }
