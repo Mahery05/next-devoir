@@ -33,6 +33,22 @@ export default function Header() {
       >
         Créer une réservation
       </Link>
+      <Link
+        href="/activites"
+        className={clsx("", {
+          active: pathname === "/activites",
+        })}
+      >
+        Activites
+      </Link>
+      <Link
+        href="/activites/create"
+        className={clsx("", {
+          active: pathname === "/activites/create",
+        })}
+      >
+        Créer une activité
+      </Link>
       <button onClick={Logout}>Logout</button>
     </nav>
   );
