@@ -1,12 +1,16 @@
+"use client";
 
-import DetailsActivite from "@/components/DetailsActivite";
+import React from 'react';
+import { useParams } from 'next/navigation';
+import DetailsActivite from '@/components/DetailsActivite';
 
-export default function ActivitesPage() {
- return (
-     <>
-       <h2>Détails de l&apos;activité</h2>
-       <DetailsActivite/>
-     </>
-   );
-  
-}
+const ActiviteDetailsPage = () => {
+  const params = useParams();
+  const { id } = params;
+
+  if (!id) return <div>Loading...</div>;
+
+  return <DetailsActivite id={parseInt(id as string, 10)} />;
+};
+
+export default ActiviteDetailsPage;

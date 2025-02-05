@@ -1,71 +1,64 @@
 "use client";
 
-import { useParams } from 'next/navigation'; // Utiliser useParams de next/navigation
-import { useEffect, useState } from 'react';
-import { Activite } from '@/types/Activite';
+import React, { useState, useEffect } from "react";
+import { supabase } from '../lib/supabaseClient';
 
-const DetailsActivite = () => {
-  const { id } = useParams(); 
-  const [activite, setActivite] = useState<Activite | null>(null);
+interface DetailsActiviteProps {
+  id: number;
+}
+
+const DetailsActivite: React.FC<DetailsActiviteProps> = ({ id }) => {
+  const [activite, setActivite] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null); 
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    console.log("ID récupéré:", id); 
-    if (id) {
-      const fetchActivite = async () => {
-        try {
-          const response = await fetch(`/api/activites/${id}`);
-          console.log("Réponse de l'API:", response); 
-          
-          if (!response.ok) {
-            throw new Error(`Erreur lors de la récupération des données (Statut: ${response.status})`);
-          }
+    const fetchActivite = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("activites")
+          .select("*")
+          .eq("id", id)
+          .single();
 
-          const data = await response.json();
-          console.log("Données de l'activité:", data); 
-
-          if (data && data.nom) {
-            setActivite(data);
-          } else {
-            throw new Error('Aucune activité trouvée avec cet ID');
-          }
-
-          setLoading(false);
-        } catch (error: any) {
-          console.error('Erreur lors de la récupération de l\'activité:', error.message);
-          setError(error.message);  
-          setLoading(false);
+        if (error) {
+          throw new Error(`Erreur lors de la récupération des données: ${error.message}`);
         }
-      };
 
-      fetchActivite();
-    } else {
-      setError('ID manquant');
-      setLoading(false);
-    }
-  }, [id]); 
+        if (data) {
+          setActivite(data);
+        } else {
+          throw new Error('Aucune activité trouvée avec cet ID');
+        }
 
-  if (loading) {
-    return <p>Chargement...</p>;
-  }
+        setLoading(false);
+      } catch (error: any) {
+        console.error('Erreur lors de la récupération de l\'activité:', error.message);
+        setError(error.message);
+        setLoading(false);
+      }
+    };
 
-  if (error) {
-    return <p>{error}</p>;  
-  }
+    fetchActivite();
+  }, [id]);
 
-  if (!activite) {
-    return <p>Aucune activité trouvée</p>;
-  }
+  if (loading) return <div>Chargement...</div>;
+
+  if (error) return <div>Erreur: {error}</div>;
 
   return (
     <div>
       <h1>Détails de l&apos;activité</h1>
-      <p><strong>Nom:</strong> {activite.nom || 'Nom indisponible'}</p>
-      <p><strong>Description:</strong> {activite.description || 'Description indisponible'}</p>
-      <p><strong>Date:</strong> {activite.datetime_debut ? new Date(activite.datetime_debut).toLocaleString() : 'Date indisponible'}</p>
-      <p><strong>Durée:</strong> {activite.duree || 'Durée indisponible'} minutes</p>
-      <p><strong>Places disponibles:</strong> {activite.places_disponibles || 'Indisponible'}</p>
+      {activite && (
+        <div>
+          <p>Nom: {activite.nom}</p>
+          <p>Description: {activite.description}</p>
+          <p>Date de début: {new Date(activite.datetime_debut).toLocaleString()}</p>
+          <p>Durée: {activite.duree} minutes</p>
+          <p>Places disponibles: {activite.places_disponibles}</p>
+          <p>Type d&apos;activité: {activite.type_id}</p>
+        </div>
+      )}
     </div>
   );
 };
