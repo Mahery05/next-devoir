@@ -14,6 +14,10 @@ export default function Header() {
     logout(); // Destroy the cookie
     return router.push("/login"); // redirect to login page
   };
+
+  if (pathname === "/login" || pathname === "/register") {
+    return null;
+  }
  
   return (
     <nav>
