@@ -1,50 +1,63 @@
 "use client";
 
+import { Activite } from "@/types/Activite";
 import { Reservation } from "@/types/Reservation";
 import { useEffect, useState } from "react";
 
 
- 
 export default function Reservations() {
+  const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [activites, setActivites] = useState<Activite[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-    const [reservations, setReservations] = useState<Reservation[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+  const getReservationsList = async () => {
+    try {
+      const [reservationsResponse, activitesResponse] = await Promise.all([
+        fetch("/api/reservations"), // Call API for reservations
+        fetch("/api/activites"), // Call API for activities
+      ]);
 
-    const getReservationsList = async () => {
-        const response = await fetch("/api/reservations"); // Call API
- 
-        if (!response.ok || response.status >= 300) {
-            return <p>Une erreur est survenue</p>;
-        }
-        
-        const reservations = await response.json();
+      if (!reservationsResponse.ok || !activitesResponse.ok ) {
+        throw new Error("Erreur lors de la récupération des données");
+      }
 
-        console.log(reservations);
-        setReservations(reservations);
-        setIsLoading(false);
+      const reservations = await reservationsResponse.json();
+      const activites = await activitesResponse.json();
+      
+
+      setReservations(reservations);
+      setActivites(activites);
+      
+      setIsLoading(false);
+    } catch (error) {
+      console.error("Erreur:", error);
     }
+  };
 
-    useEffect(() => {
-        getReservationsList();
-    }, []);
+  useEffect(() => {
+    getReservationsList();
+  }, []);
 
-    if (isLoading) {
-        return <p>Chargement...</p>;
-    }
+  if (isLoading) {
+    return <p>Chargement...</p>;
+  }
 
-    return <>
-        {reservations.length > 0 ? (
-            <>
-                {reservations.map((reservation: Reservation, i: number) => {
-                    return (
-                    <p key={i}>
-                        {reservation.datereservation.toString()} : {reservation.etat} : {reservation.activite_id} : {reservation.user_id}
-                    </p>
-                    );
-                })};
-            </>
-        ) : (
-            <p>Aucune réservation</p>
-        )}
+  return (
+    <>
+      {reservations.length > 0 ? (
+        <>
+          {reservations.map((reservation: Reservation, i: number) => {
+            const activite = activites.find((a) => a.id === reservation.activite_id);
+            return (
+              <p key={i}>
+                {reservation.datereservation.toString()} : {reservation.etat} : {activite ? activite.nom : "Activité inconnue"} 
+              </p>
+            );
+          })}
+        </>
+      ) : (
+        <p>Aucune réservation</p>
+      )}
     </>
+  );
 }
