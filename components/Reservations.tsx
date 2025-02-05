@@ -92,7 +92,7 @@ export default function Reservations() {
                     borderRadius: "5px",
                   }}
                 >
-                  {reservation.etat ? "Annuler" : "Réactiver"}
+                  {reservation.etat ? "Annuler la réservation" : "Activer la réservation"}
                 </button>
               </div>
             );
