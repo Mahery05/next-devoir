@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'; // Utilisez 'next/navigation' au li
 import { supabase } from '../lib/supabaseClient';
 import { Activite } from '@/types/Activite';
 import { TypeActivite } from '@/types/TypeActivite';
+import Link from 'next/link';
 
 const Activites = () => {
   const [activites, setActivites] = useState<Activite[]>([]);
@@ -54,16 +55,20 @@ const Activites = () => {
       {activites.length > 0 ? (
         <>
           {activites.map((activite: Activite, i: number) => {
-            return (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
-                <p>
-                  {activite.nom} : {new Date(activite.datetime_debut).toLocaleString()} : {activite.description} : {activite.duree} minutes : {activite.places_disponibles} places disponibles : {getTypeNom(activite.type_id)}
-                </p>
-                <button onClick={() => handleEdit(activite.id)} style={{ marginLeft: '10px', background: 'none', border: 'none', cursor: 'pointer' }}>
-                  <img src="/images/edit.png" alt="Edit" width={20} height={20} />
-                </button>
-              </div>
-            );
+         return (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
+              <p>
+                <Link href={`/activites/${activite.id}`}>
+                  {activite.nom} {/* Lien sur le nom de l'activité */}
+                </Link>
+                : {new Date(activite.datetime_debut).toLocaleString()} 
+                : {getTypeNom(activite.type_id)}
+              </p>
+              <button onClick={() => handleEdit(activite.id)} style={{ marginLeft: '10px', background: 'none', border: 'none', cursor: 'pointer' }}>
+                <img src="/images/edit.png" alt="Edit" width={20} height={20} />
+              </button>
+            </div>
+          );
           })}
         </>
       ) : (
