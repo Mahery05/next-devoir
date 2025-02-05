@@ -1,177 +1,137 @@
 "use client";
 
-import React, { useState, useEffect, FormEvent, useRef, ReactNode } from "react";
-import { useRouter } from "next/navigation";
-import { supabase } from '../lib/supabaseClient';
+import React, { useState, useEffect } from "react";
+import { useRouter, useParams } from "next/navigation";
+import { Activite } from "@/types/Activite";
 import { TypeActivite } from "@/types/TypeActivite";
+import Image from "next/image";
 
-interface ActivitesEditFormProps {
-  id: number;
-}
-
-export default function ActivitesEditForm({ id }: ActivitesEditFormProps) {
-  const [activite, setActivite] = useState<any>(null);
+const ActiviteEditForm = () => {
+  const { id } = useParams();
+  const router = useRouter();
+  const [activite, setActivite] = useState<Activite | null>(null);
   const [typeActivites, setTypeActivites] = useState<TypeActivite[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<ReactNode>(null);
-  const [success, setSuccess] = useState<ReactNode>(null);
-  const router = useRouter();
-  const formRef = useRef<HTMLFormElement>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+
+
+  const getData = async () => {
+    const response = await fetch(`/api/activite/edit/${id}`);
+
+    if (!response.ok) {
+      throw new Error("Erreur lors de la récupération des données.");
+    }
+
+    const data = await response.json();
+    setActivite(data);
+
+    const type_response = await fetch(`/api/type_activite`);
+
+    if (!type_response.ok) {
+      throw new Error("Erreur lors de la récupération des types d'activités.");
+    }
+
+    const types = await type_response.json();
+    setTypeActivites(types);
+
+    setLoading(false);
+  }
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const { data: activiteData, error: activiteError } = await supabase
-          .from("activites")
-          .select("*")
-          .eq("id", id)
-          .single();
+    if (!id) {
+      setError("ID d'activité manquant.");
+      setLoading(false);
+      return;
+    }
 
-        if (activiteError) {
-          setError(<p>Erreur lors du chargement de l&apos;activité</p>);
-          setLoading(false);
-          return;
-        }
-
-        setActivite(activiteData);
-
-        const { data: typeActivitesData, error: typeActivitesError } = await supabase
-          .from("type_activite")
-          .select("*");
-
-        if (typeActivitesError) {
-          setError(<p>Erreur lors du chargement des types d&apos;activités</p>);
-          setLoading(false);
-          return;
-        }
-
-        setTypeActivites(typeActivitesData);
-        setLoading(false);
-      } catch (error) {
-        console.error("Erreur lors du chargement des données:", error);
-        setError(<p>Erreur lors du chargement des données</p>);
-        setLoading(false);
-      }
-    };
-
-    fetchData();
+    getData();
   }, [id]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    if (!activite) return;
+
     const { name, value } = e.target;
     setActivite({ ...activite, [name]: value });
   };
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setError(null);
+    setSuccess(null);
 
-    if (!formRef.current) return;
-
-    const formData = new FormData(formRef.current);
-    const nom = formData.get("nom")?.toString().trim() || "";
-    const datetime_debut = formData.get("datetime_debut")?.toString().trim() || "";
-    const duree = formData.get("duree")?.toString().trim() || "";
-    const description = formData.get("description")?.toString().trim() || "";
-    const places_disponibles = formData.get("places_disponibles")?.toString().trim() || "";
-    const type_id = formData.get("type_id")?.toString().trim() || "";
-
-    if (!nom || !datetime_debut || !duree || !description || !places_disponibles || !type_id) {
-      setError(<p>Veuillez remplir tous les champs.</p>);
-      setSuccess(null);
-      return;
-    }
+    if (!activite) return;
 
     try {
-      const { error } = await supabase
-        .from("activites")
-        .update({ nom, datetime_debut, duree, description, places_disponibles, type_id })
-        .eq("id", id);
+      const response = await fetch(`/api/activite/edit/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(activite),
+      });
 
-      if (error) {
-        setError(<p>Erreur lors de la mise à jour de l&apos;activité</p>);
-        return;
+      if (!response.ok) {
+        throw new Error("Erreur lors de la mise à jour de l'activité");
       }
 
-      setError(null);
-      setSuccess(<p>Activité mise à jour avec succès !</p>);
-      router.refresh(); // Actualiser la page si nécessaire
-    } catch (error) {
-      console.error("Erreur lors de la mise à jour de l&apos;activité:", error);
-      setError(<p>Une erreur s&apos;est produite lors de la mise à jour de l&apos;activité</p>);
+      setSuccess("Activité mise à jour avec succès !");
+      setTimeout(() => {
+        router.push("/activites"); // Redirection après succès
+      }, 1000);
+    } catch {
+      setError("Une erreur s'est produite lors de la mise à jour de l'activité.");
     }
   };
 
-  if (loading) return <div>Chargement...</div>;
-
-  if (!activite) return <div>Erreur lors du chargement de l&apos;activité</div>;
+  if (loading) return <p>Chargement...</p>;
+  if (error) return <p>{error}</p>;
+  if (!activite) return <p>Aucune activité trouvée</p>;
 
   return (
-    <>
-      <form ref={formRef} method="POST" onSubmit={handleSubmit}>
-        <label htmlFor="nom">Nom : </label>
-        <input
-          type="text"
-          name="nom"
-          id="nom"
-          value={activite.nom}
-          onChange={handleChange}
-        />
-        <br />
-        <label htmlFor="datetime_debut">Date de début : </label>
+    <div>
+      <h2>Modifier l&apos;activité</h2>
+      <form onSubmit={handleSubmit}>
+        <label>Nom :</label>
+        <input type="text" name="nom" value={activite.nom || ""} onChange={handleChange} />
+
+        <label>Date de début :</label>
         <input
           type="datetime-local"
           name="datetime_debut"
-          id="datetime_debut"
-          value={activite.datetime_debut}
+          value={activite.datetime_debut ? new Date(activite.datetime_debut).toISOString().slice(0, 16) : ""}
           onChange={handleChange}
         />
-        <br />
-        <label htmlFor="duree">Durée : </label>
-        <input
-          type="text"
-          name="duree"
-          id="duree"
-          value={activite.duree}
-          onChange={handleChange}
-        />
-        <br />
-        <label htmlFor="description">Description : </label>
-        <input
-          type="text"
-          name="description"
-          id="description"
-          value={activite.description}
-          onChange={handleChange}
-        />
-        <br />
-        <label htmlFor="places_disponibles">Places disponibles : </label>
-        <input
-          type="number"
-          name="places_disponibles"
-          id="places_disponibles"
-          value={activite.places_disponibles}
-          onChange={handleChange}
-        />
-        <br />
-        <label htmlFor="type_id">Type d&apos;activité :</label>
-        <select
-          name="type_id"
-          id="type_id"
-          value={activite.type_id}
-          onChange={handleChange}
-        >
+
+        <label>Durée :</label>
+        <input type="text" name="duree" value={activite.duree || ""} onChange={handleChange} />
+
+        <label>Description :</label>
+        <input type="text" name="description" value={activite.description || ""} onChange={handleChange} />
+
+        <label>Places disponibles :</label>
+        <input type="number" name="places_disponibles" value={activite.places_disponibles || ""} onChange={handleChange} />
+
+        <label>Type d&apos;activité :</label>
+        <select name="type_id" value={activite.type_id || ""} onChange={handleChange}>
           <option value="">Sélectionner un type</option>
-          {typeActivites.map((typeActivite) => (
-            <option key={typeActivite.id} value={typeActivite.id}>
-              {typeActivite.nom}
+          {typeActivites.map((type) => (
+            <option key={type.id} value={type.id}>
+              {type.nom}
             </option>
           ))}
         </select>
-        <br />
-        <input type="submit" value="Mettre à jour l&apos;activité" />
+
+        <button type="submit">Mettre à jour</button>
       </form>
-      {error && error}
-      {success && success}
-    </>
+
+      {error && <p style={{ color: "red" }}>{error}</p>}
+      {success && <p style={{ color: "green" }}>{success}</p>}
+      
+      <button onClick={() => router.back()} style={{ marginTop: "10px" }}>
+        <Image src="/images/back.png" alt="Retour" width={20} height={20} />
+        Retour
+      </button>
+    </div>
   );
-}
+};
+
+export default ActiviteEditForm;
