@@ -142,3 +142,5 @@ async function editActivites(id: number, nom: string, datetime_debut: string, du
 
   return data; // Retourner l'entrée mise à jour
 }
+
+

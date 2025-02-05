@@ -51,6 +51,25 @@ const Activites = () => {
     router.push(`/activites/edit/${id}`);
   };
 
+  const handleDelete = async (id: number) => {
+    try {
+      const response = await fetch(`/api/activite/${id}`, {
+        method: 'DELETE', 
+      });
+  
+      if (!response.ok) {
+        throw new Error('Erreur lors de la suppression de l\'activité');
+      }
+
+      alert('Activité supprimée avec succès');
+  
+    } catch (error) {
+      console.error('Erreur lors de la suppression:', error);
+      alert('Une erreur est survenue lors de la suppression');
+    }
+  };
+  
+
   return (
     <>
       {activites.length > 0 ? (
@@ -68,6 +87,9 @@ const Activites = () => {
               <button onClick={() => handleEdit(activite.id)} style={{ marginLeft: '10px', background: 'none', border: 'none', cursor: 'pointer' }}>
                 <Image src="/images/edit.png" alt="Edit" width={20} height={20} />
               </button>
+              <button onClick={() => handleDelete(activite.id)} style={{ marginLeft: '10px', background: 'none', border: 'none', cursor: 'pointer' }}>
+                <Image src="/images/delete.png" alt="Delete" width={20} height={20} />
+                </button>
             </div>
           );
           })}
