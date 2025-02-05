@@ -126,10 +126,6 @@ const ActiviteEditForm = () => {
       {error && <p style={{ color: "red" }}>{error}</p>}
       {success && <p style={{ color: "green" }}>{success}</p>}
       
-      <button onClick={() => router.back()} style={{ marginTop: "10px" }}>
-        <Image src="/images/back.png" alt="Retour" width={20} height={20} />
-        Retour
-      </button>
     </div>
   );
 };
