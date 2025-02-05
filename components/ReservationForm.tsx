@@ -2,34 +2,30 @@
 
 import { useState, useEffect, FormEvent, JSX } from "react";
 import { useRouter } from "next/navigation";
-import { User } from "@/types/User";
 import { Activite } from "@/types/Activite";
-
-
+import { getSession } from "@/utils/sessions"; // Assure-toi que ce chemin est correct
 
 export default function ReservationForm() {
   const [error, setError] = useState<JSX.Element | null>(null);
   const [success, setSuccess] = useState<JSX.Element | null>(null);
-  const [users, setUsers] = useState<User[]>([]);
   const [activites, setActivites] = useState<Activite[]>([]);
+  const [userSession, setUserSession] = useState<any>(null); // Utiliser any ou un typage plus précis pour la session utilisateur
   const router = useRouter();
 
-  // Récupérer la liste des utilisateurs et des activités depuis l'API
+  // Récupérer les activités depuis l'API et les infos de session
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [usersResponse, activitesResponse] = await Promise.all([
-          fetch("/api/user"), // Remplacez par votre endpoint API réel pour récupérer les utilisateurs
-          fetch("/api/activites"), // Remplacez par votre endpoint API réel pour récupérer les activités
-        ]);
-
-        const usersData = await usersResponse.json();
+        // Récupérer les activités
+        const activitesResponse = await fetch("/api/activites");
         const activitesData = await activitesResponse.json();
-
-        setUsers(usersData);
         setActivites(activitesData);
+
+        // Récupérer la session utilisateur
+        const sessionData = await getSession();
+        setUserSession(sessionData);
       } catch (error) {
-        console.error("Erreur lors du chargement des utilisateurs ou des activités:", error);
+        console.error("Erreur lors du chargement des données:", error);
         setError(<p>Erreur lors du chargement des données</p>);
       }
     };
@@ -44,11 +40,16 @@ export default function ReservationForm() {
     const datereservation = e.currentTarget.datereservation.value.trim();
     const etat = e.currentTarget.etat.checked ? "1" : "0"; // Convertir la checkbox en booléen
     const activite_id = e.currentTarget.activite_id.value;
-    const user_id = e.currentTarget.user_id.value;
 
     // Vérifier si tous les champs sont remplis
-    if (datereservation === "" || activite_id === "" || user_id === "") {
+    if (datereservation === "" || activite_id === "") {
       setError(<p>Tous les champs ne sont pas remplis</p>);
+      return;
+    }
+
+    // Assurer que la session utilisateur est chargée avant de créer la réservation
+    if (!userSession) {
+      setError(<p>Erreur : utilisateur non connecté</p>);
       return;
     }
 
@@ -62,7 +63,8 @@ export default function ReservationForm() {
           datereservation,
           etat,
           activite_id: Number(activite_id),
-          user_id: Number(user_id),
+          user_id: userSession.rowid, // Utiliser l'ID de l'utilisateur connecté
+          user_nom: userSession.nom,  // Facultatif : inclure le nom de l'utilisateur
         }),
       });
 
@@ -115,18 +117,6 @@ export default function ReservationForm() {
         </select>
         <br />
 
-        {/* Sélection des utilisateurs */}
-        <label htmlFor="user_id">Utilisateur</label>
-        <select name="user_id" id="user_id">
-          <option value="">Sélectionner un utilisateur</option>
-          {users.map((user) => (
-            <option key={user.id} value={user.id}>
-              {user.nom}
-            </option>
-          ))}
-        </select>
-        <br />
-
         <input type="submit" name="creer" value="Créer une réservation" />
       </form>
       {error && error}
@@ -134,4 +124,3 @@ export default function ReservationForm() {
     </>
   );
 }
-
