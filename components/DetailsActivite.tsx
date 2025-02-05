@@ -69,7 +69,7 @@ const DetailsActivite = () => {
   
   return (
     <div>
-      <h1>Détails de l&apos;activité</h1>
+      <h2>Détails de l&apos;activité</h2>
       <p><strong>Nom:</strong> {activite.nom || 'Nom indisponible'}</p>
       <p><strong>Description:</strong> {activite.description || 'Description indisponible'}</p>
       <p><strong>Date:</strong> {activite.datetime_debut ? new Date(activite.datetime_debut).toLocaleString() : 'Date indisponible'}</p>

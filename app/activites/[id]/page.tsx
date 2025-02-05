@@ -1,10 +1,8 @@
-
 import DetailsActivite from "@/components/DetailsActivite";
 
-export default function ActivitesPage() {
+export default function DetailActivitePage() {
  return (
      <>
-       <h2>Détails de l&apos;activité</h2>
        <DetailsActivite/>
      </>
    );
