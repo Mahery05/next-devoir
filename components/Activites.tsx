@@ -1,50 +1,67 @@
-"use client";
+"use client"
 
-import { Activite } from "@/types/Activite";
-import { useEffect, useState } from "react";
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabaseClient';
+import { Activite } from '@/types/Activite';
+import { TypeActivite } from '@/types/TypeActivite';
 
 
- 
-export default function Activites() {
 
-    const [activites, setActivites] = useState<Activite[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+const Activites = () => {
+  const [activites, setActivites] = useState<Activite[]>([]);
+  const [typeActivites, setTypeActivites] = useState<TypeActivite[]>([]);
+  const [loading, setLoading] = useState(true);
 
-    const getActivitesList = async () => {
-        const response = await fetch("/api/activites"); // Call API
- 
-        if (!response.ok || response.status >= 300) {
-            return <p>Une erreur est survenue</p>;
-        }
-        
-        const activites = await response.json();
+  useEffect(() => {
+    const fetchData = async () => {
+      const { data: activitesData, error: activitesError } = await supabase
+        .from('activites')
+        .select('*');
 
-        console.log(activites);
-        setActivites(activites);
-        setIsLoading(false);
-    }
+      const { data: typeActivitesData, error: typeActivitesError } = await supabase
+        .from('type_activite')
+        .select('*');
 
-    useEffect(() => {
-        getActivitesList();
-    }, []);
+      if (activitesError || typeActivitesError) {
+        console.error('Erreur lors du chargement des données');
+        setLoading(false);
+        return;
+      }
 
-    if (isLoading) {
-        return <p>Chargement...</p>;
-    }
+      setActivites(activitesData);
+      setTypeActivites(typeActivitesData);
+      setLoading(false);
+    };
 
-    return <>
-        {activites.length > 0 ? (
-            <>
-                {activites.map((activite: Activite, i: number) => {
-                    return (
-                    <p key={i}>
-                        {activite.nom} : {activite.datetime_debut.toString()} : {activite.description} : {activite.duree} : {activite.places_disponibles} : {activite.type_id}
-                    </p>
-                    );
-                })};
-            </>
-        ) : (
-            <p>Aucune réservation</p>
-        )}
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return <p>Chargement...</p>;
+  }
+
+  const getTypeNom = (typeId: number) => {
+    const type = typeActivites.find((type) => type.id === typeId);
+    return type ? type.nom : 'Type inconnu';
+  };
+
+  return (
+    <>
+      {activites.length > 0 ? (
+        <>
+          {activites.map((activite: Activite, i: number) => {
+            return (
+              <p key={i}>
+                {activite.nom} : {new Date(activite.datetime_debut).toLocaleString()} : {activite.description} : {activite.duree} minutes : {activite.places_disponibles} places disponibles : {getTypeNom(activite.type_id)}
+              </p>
+            );
+          })}
+        </>
+      ) : (
+        <p>Aucune activité</p>
+      )}
     </>
-}
+  );
+};
+
+export default Activites;
