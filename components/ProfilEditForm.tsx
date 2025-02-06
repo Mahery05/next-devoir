@@ -1,66 +1,68 @@
+"use client";
+
 import { useEffect, useState } from "react";
-import { getSession } from "@/utils/sessions"; // Assure-toi que la fonction getSession existe et récupère bien les données de session
+import { getSession } from "@/utils/sessions";
+import { useRouter } from "next/navigation";
 
 const ProfilEditForm = () => {
-
   const [userData, setUserData] = useState<any>(null);
-  const [loading, setLoading] = useState<boolean>(true); // État pour gérer le chargement des données
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [success, setSuccess] = useState<string | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchUserData = async () => {
-      try {
-        const session = await getSession(); // Récupérer la session
-        if (session && session.id) {
-          // Récupérer les données de l'utilisateur avec l'ID depuis ton API ou ta base de données
-          const response = await fetch(`/api/user/${session.id}`);
-          if (!response.ok) {
-            throw new Error("Erreur lors de la récupération des données utilisateur.");
-          }
-          const data = await response.json();
-          setUserData(data); // Mettre à jour l'état avec les données utilisateur
-        } else {
-          setError("Utilisateur non authentifié.");
-        }
-      } catch (error) {
-        console.error(error);
-        setError("Une erreur est survenue lors de la récupération des données.");
-      } finally {
-        setLoading(false); // Fin du chargement
+      const session = await getSession();
+      if (session?.rowid) {
+        const response = await fetch(`/api/user/profil`);
+        const data = await response.json();
+        setUserData(data);
+      } else {
+        setError("Utilisateur non authentifié.");
       }
+      setLoading(false);
     };
 
     fetchUserData();
-  }, []); // Ce useEffect ne dépend de rien, donc il s'exécute une seule fois lors du montage
+  }, []);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUserData({ ...userData, [e.target.name]: e.target.value });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Logique pour envoyer les données modifiées (à compléter)
+
+    const response = await fetch(`/api/user/edit`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(userData),
+    });
+
+    if (!response.ok) {
+      setError("Erreur mise à jour.");
+    } else {
+      setSuccess("Profil mis à jour !");
+      setTimeout(() => router.push("/mon-profil"), 1000);
+    }
   };
 
+  if (loading) return <p>Chargement...</p>;
+  if (error) return <p style={{ color: "red" }}>{error}</p>;
+
   return (
-    <>
-      <h2>Éditer mon profil</h2>
-      {loading ? (
-        <p>Chargement des données...</p>
-      ) : error ? (
-        <p>{error}</p>
-      ) : (
-        <form onSubmit={handleSubmit}>
-          <label>Prénom :</label>
-          <input type="text" value={userData?.prenom || ""} readOnly={false} />
-          <label>Nom :</label>
-          <input type="text" value={userData?.nom || ""} readOnly={false} />
-          <label>Email :</label>
-          <input type="email" value={userData?.email || ""} readOnly={false} />
-          {/* Ajouter un bouton pour enregistrer les modifications */}
-          <button type="submit">Enregistrer</button>
-        </form>
-      )}
-    </>
+    <form onSubmit={handleSubmit}>
+      <label>Prénom :</label>
+      <input type="text" name="prenom" value={userData?.prenom || ""} onChange={handleChange} />
+      <label>Nom :</label>
+      <input type="text" name="nom" value={userData?.nom || ""} onChange={handleChange} />
+      <label>Email :</label>
+      <input type="email" name="email" value={userData?.email || ""} onChange={handleChange} />
+      <button type="submit">Enregistrer</button>
+    </form>
   );
 };
 
 export default ProfilEditForm;
-
-
