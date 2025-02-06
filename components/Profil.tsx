@@ -19,6 +19,16 @@ const Profil = () => {
     fetchSession();
   }, []);
 
+  const handleDelete = async () => {
+    const response = await fetch("/api/user/delete", {
+      method: "DELETE",
+    });
+
+    if (response.ok) {
+      router.push("/");
+    }
+  }
+
   return (
     <>
       <h2>Mon profil</h2>
@@ -28,6 +38,7 @@ const Profil = () => {
           <p><strong>Nom :</strong> {session.nom || 'Non disponible'}</p>
           <p><strong>Email :</strong> {session.email || 'Non disponible'}</p>
           <Link href="mon-profil/edit">Modifier mon profil</Link>
+          <button onClick={handleDelete}>Supprimer mon compte</button>
         </div>
       ) : (
         <p>Chargement des données utilisateur...</p>
